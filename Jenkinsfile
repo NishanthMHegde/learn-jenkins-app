@@ -52,6 +52,8 @@ pipeline {
                 npx playwright test --reporter=html
                 chmod -R 755 playwright-report
                 ls -la playwright-report/
+                mkdir -p jenkins-html
+                cp -r playwright-report/* jenkins-html/
                 '''
             }
         }
@@ -60,7 +62,7 @@ pipeline {
     post {
             always {
                 junit 'test-results/junit.xml'
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'jenkins-html', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: ''])
             }
         }
 }
