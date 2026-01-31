@@ -41,6 +41,7 @@ pipeline {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
+                    args "-v ${env.WORKSPACE}:${env.WORKSPACE}"
                 }
             }
             steps {
@@ -59,10 +60,16 @@ pipeline {
         }
         
     }
-    post {
-            always {
-                junit 'test-results/junit.xml'
-                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'jenkins-html', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: ''])
-            }
-        }
+   post {
+    always {
+        publishHTML([
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: 'playwright-report',
+            reportFiles: 'index.html',
+            reportName: 'Playwright HTML Report'
+        ])
+    }
+}
 }
