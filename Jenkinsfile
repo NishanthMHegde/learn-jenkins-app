@@ -46,6 +46,7 @@ pipeline {
             steps {
                 sh '''
                 echo "E2E Test Stage"
+                export CI=false
                 npm install serve
                 node_modules/.bin/serve -s build &
                 sleep 10
