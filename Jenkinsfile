@@ -2,25 +2,25 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                ls -la
-                npm --version
-                node --version
-                npm cache clean --force
-                npm ci
-                npm run build
-                ls -la
-                '''
-            }
-        }
+        // stage('Build') {
+        //     agent {
+        //         docker {
+        //             image 'node:18-alpine'
+        //             reuseNode true
+        //         }
+        //     }
+        //     steps {
+        //         sh '''
+        //         ls -la
+        //         npm --version
+        //         node --version
+        //         npm cache clean --force
+        //         npm ci
+        //         npm run build
+        //         ls -la
+        //         '''
+        //     }
+        // }
         stage('Test') {
             agent {
                 docker {
@@ -49,7 +49,7 @@ pipeline {
                 npm install serve
                 node_modules/.bin/serve -s build &
                 sleep 10
-                npx playwright test --reporter=html
+                npx playwright test --reporter=html --reporter-options=outputFolder=playwright-report,open=never
                 '''
             }
         }
