@@ -50,10 +50,6 @@ pipeline {
                 node_modules/.bin/serve -s build &
                 sleep 10
                 npx playwright test --reporter=html
-                chmod -R 755 playwright-report
-                ls -la playwright-report/
-                mkdir -p jenkins-html
-                cp -r playwright-report/* jenkins-html/
                 '''
             }
         }
