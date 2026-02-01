@@ -86,6 +86,9 @@ pipeline {
             }
             steps {
                 sh '''
+                echo "Configuring npm registry..."
+                npm config set registry https://registry.npmjs.org/
+                npm config get registry
                 npm install netlify
                 node_modules/.bin/netlify --version
                 '''
