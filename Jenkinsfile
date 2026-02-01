@@ -77,15 +77,19 @@ pipeline {
             }
         }
         stage('Deploy') {
-            agent {
-                docker {
-                    image 'my_netlify_cli'
-                    reuseNode true
-                }
-            }
             steps {
                 sh '''
-                netlify --version
+                echo "Who am I?"
+                whoami
+
+                echo "Docker images visible:"
+                docker images | head -20 || true
+
+                echo "Which netlify?"
+                which netlify || true
+
+                echo "Netlify version:"
+                netlify --version || true
                 '''
             }
         }
