@@ -79,7 +79,7 @@ pipeline {
         stage('Deploy') {
             agent {
                 docker {
-                    image 'netlify/cli:latest'
+                    image 'my_netlify_cli'
                     reuseNode true
                 }
             }
