@@ -81,6 +81,7 @@ pipeline {
                 docker {
                     image 'node:18-alpine'
                     reuseNode true
+                    args '--dns=8.8.8.8 --dns=8.8.4.4'
                 }
             }
             steps {
