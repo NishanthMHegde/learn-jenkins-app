@@ -79,18 +79,13 @@ pipeline {
         stage('Deploy') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    image 'netlify/cli:latest'
                     reuseNode true
-                    args '--dns=8.8.8.8 --dns=8.8.4.4'
                 }
             }
             steps {
                 sh '''
-                echo "Configuring npm registry..."
-                npm config set registry https://registry.npmjs.org/
-                npm config get registry
-                npm install netlify
-                node_modules/.bin/netlify --version
+                netlify --version
                 '''
             }
         }
