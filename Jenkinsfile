@@ -79,17 +79,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                echo "Who am I?"
-                whoami
-
-                echo "Docker images visible:"
-                docker images | head -20 || true
-
-                echo "Which netlify?"
-                which netlify || true
-
-                echo "Netlify version:"
-                netlify --version || true
+                npm install netlify
                 '''
             }
         }
