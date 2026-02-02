@@ -92,7 +92,7 @@ pipeline {
                 sh '''
                 npm install netlify-cli
                 ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --prod --dir=build
+                ./node_modules/.bin/netlify deploy --prod --dir=build --build=false
                 '''
             }
         }
