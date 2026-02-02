@@ -1,8 +1,7 @@
 pipeline {
     agent any
     environment {
-        NETLIFY_CLI_SITE_ID = '2b262f45-2eb0-49c5-a8e4-e647189c7fe5'
-        NETLIFY_CLI_AUTH_TOKEN = 'nfp_XufuFQKXYuBbgM6Nkfc4bC5jjAQd83LReb9c'
+        NETLIFY_SITE_ID = '2b262f45-2eb0-49c5-a8e4-e647189c7fe5'
     }
 
     stages {
@@ -91,7 +90,7 @@ pipeline {
             steps {
                 sh '''
                 npm install netlify-cli
-                ./node_modules/.bin/netlify --status
+                ./node_modules/.bin/netlify status
                 '''
             }
         }
