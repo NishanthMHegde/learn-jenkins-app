@@ -112,54 +112,25 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy') {
-        //     agent {
-        //         docker {
-        //             image 'node:18-alpine'
-        //             reuseNode true
-        //             args '--network=host'
-        //         }
-        //     }
-        //     steps {
-        //         sh '''
-        //         echo 'Starting the Deployment stage'
-        //         npm install netlify-cli
-        //         ./node_modules/.bin/netlify status
-        //         ./node_modules/.bin/netlify deploy --prod --dir=./build
-        //         '''
-        //     }
-        // }
+        stage('Deploy') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                    args '--network=host'
+                }
+            }
+            steps {
+                sh '''
+                echo 'Starting the Deployment stage'
+                npm install netlify-cli
+                ./node_modules/.bin/netlify status
+                ./node_modules/.bin/netlify deploy --prod --dir=./build
+                '''
+            }
+        }
         
-        // stage('ProdE2ETest') {
-        //     environment {
-        //         CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
-        //     }
-
-        //     agent {
-        //         docker {
-        //             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-        //             reuseNode true
-        //         }
-        //     }
-        //     steps {
-        //         sh '''
-        //         echo "E2E Prod Test Stage"
-        //         npx playwright test --reporter=list,html
-        //         '''
-        //     }
-        //     post {
-        //         always {
-        //             publishHTML([
-        //                 allowMissing: false,
-        //                 alwaysLinkToLastBuild: true,
-        //                 keepAll: true,
-        //                 reportDir: 'playwright-report',
-        //                 reportFiles: 'index.html',
-        //                 reportName: 'Playwright Prodt test HTML Report'
-        //             ])
-        //         }
-        //     }
-        // }
+        
         stage('StagingE2ETest') {
             environment {
                 CI_ENVIRONMENT_URL = '${env.STAGING_URL}'
@@ -186,6 +157,36 @@ pipeline {
                         reportDir: 'playwright-report',
                         reportFiles: 'index.html',
                         reportName: 'Playwright Staging test HTML Report'
+                    ])
+                }
+            }
+        }
+        stage('ProdE2ETest') {
+            environment {
+                CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
+            }
+
+            agent {
+                docker {
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                echo "E2E Prod Test Stage"
+                npx playwright test --reporter=list,html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'playwright-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Playwright Prodt test HTML Report'
                     ])
                 }
             }
