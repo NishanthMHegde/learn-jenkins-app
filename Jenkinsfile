@@ -92,9 +92,11 @@ pipeline {
                 sh '''
                 echo 'Starting the Deployment stage to deploy to staging'
                 npm install netlify-cli
+                npm install node-jq
                 ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --dir=./build
+                ./node_modules/.bin/netlify deploy --dir=./build --json > deploy_output.json
                 '''
+                
             }
         }
         stage('Approval') {
