@@ -97,6 +97,23 @@ pipeline {
                 '''
             }
         }
+        stage('Deploy to staging') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                    args '--network=host'
+                }
+            }
+            steps {
+                sh '''
+                echo 'Starting the Deployment stage to deploy to staging'
+                npm install netlify-cli
+                ./node_modules/.bin/netlify status
+                ./node_modules/.bin/netlify deploy --dir=./build
+                '''
+            }
+        }
         stage('ProdE2ETest') {
             environment {
                 CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
