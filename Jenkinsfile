@@ -80,23 +80,6 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                    args '--network=host'
-                }
-            }
-            steps {
-                sh '''
-                echo 'Starting the Deployment stage'
-                npm install netlify-cli
-                ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --prod --dir=./build
-                '''
-            }
-        }
         stage('Deploy to staging') {
             agent {
                 docker {
@@ -114,6 +97,32 @@ pipeline {
                 '''
             }
         }
+        stage('Approval') {
+            steps {
+                sh '''
+                echo 'Approval stage'
+                '''
+                timeout(activity: true, time: 2) {
+                input message: 'Do you want to proceed with these changes?', ok: 'Approve?'
+                }
+        stage('Deploy') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                    args '--network=host'
+                }
+            }
+            steps {
+                sh '''
+                echo 'Starting the Deployment stage'
+                npm install netlify-cli
+                ./node_modules/.bin/netlify status
+                ./node_modules/.bin/netlify deploy --prod --dir=./build
+                '''
+            }
+        }
+        
         stage('ProdE2ETest') {
             environment {
                 CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
