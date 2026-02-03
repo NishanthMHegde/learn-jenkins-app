@@ -105,6 +105,8 @@ pipeline {
                 timeout(activity: true, time: 2) {
                 input message: 'Do you want to proceed with these changes?', ok: 'Approve?'
                 }
+            }
+        }
         stage('Deploy') {
             agent {
                 docker {
