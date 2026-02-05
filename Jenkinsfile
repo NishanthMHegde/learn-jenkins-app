@@ -3,6 +3,7 @@ pipeline {
     environment {
         NETLIFY_SITE_ID = '2b262f45-2eb0-49c5-a8e4-e647189c7fe5'
         NETLIFY_AUTH_TOKEN = credentials('netlify-token')
+        REACT_APP_VERSION = '1.0.${BUILD_ID}'
     }
 
     stages {
@@ -80,60 +81,10 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to staging') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                    args '--network=host'
-                }
-            }
-            steps {
-                sh '''
-                echo 'Starting the Deployment stage to deploy to staging'
-                npm install netlify-cli
-                npm install node-jq
-                ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --dir=./build --json > deploy_output.json
-                '''
-                script {
-                    env.STAGING_URL = sh(script:"./node_modules/.bin/node-jq -r '.deploy_url' 'deploy_output.json'", returnStdout:true)
-                }
-                
-            }
-        }
-        stage('Approval') {
-            steps {
-                sh '''
-                echo 'Approval stage'
-                '''
-                timeout(activity: true, time: 2) {
-                input message: 'Do you want to proceed with these changes?', ok: 'Approve?'
-                }
-            }
-        }
-        stage('Deploy') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                    args '--network=host'
-                }
-            }
-            steps {
-                sh '''
-                echo 'Starting the Deployment stage'
-                npm install netlify-cli
-                ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --prod --dir=./build
-                '''
-            }
-        }
         
-        
-        stage('StagingE2ETest') {
+        stage('DeployStagingAndTest') {
             environment {
-                CI_ENVIRONMENT_URL = "${env.STAGING_URL}"
+                CI_ENVIRONMENT_URL = "STAGING_URL_UNASSIGNED"
             }
 
             agent {
@@ -144,7 +95,13 @@ pipeline {
             }
             steps {
                 sh '''
+                echo 'Starting the Deployment stage to deploy to staging'
+                npm install netlify-cli
+                npm install node-jq
+                ./node_modules/.bin/netlify status
+                ./node_modules/.bin/netlify deploy --dir=./build --json > deploy_output.json
                 echo "E2E Staging Test Stage"
+                $CI_ENVIRONMENT_URL = ./node_modules/.bin/node-jq -r '.deploy_url' 'deploy_output.json'
                 npx playwright test --reporter=list,html
                 '''
             }
@@ -161,7 +118,7 @@ pipeline {
                 }
             }
         }
-        stage('ProdE2ETest') {
+        stage('DeployToProdAndTest') {
             environment {
                 CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
             }
@@ -174,6 +131,10 @@ pipeline {
             }
             steps {
                 sh '''
+                echo 'Starting the Deployment stage'
+                npm install netlify-cli
+                ./node_modules/.bin/netlify status
+                ./node_modules/.bin/netlify deploy --prod --dir=./build
                 echo "E2E Prod Test Stage"
                 npx playwright test --reporter=list,html
                 '''
