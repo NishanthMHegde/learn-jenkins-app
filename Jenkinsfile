@@ -101,7 +101,7 @@ pipeline {
                 ./node_modules/.bin/netlify status
                 ./node_modules/.bin/netlify deploy --dir=./build --json > deploy_output.json
                 echo "E2E Staging Test Stage"
-                CI_ENVIRONMENT_URL =$(./node_modules/.bin/node-jq -r '.deploy_url' 'deploy_output.json')
+                CI_ENVIRONMENT_URL=$(./node_modules/.bin/node-jq -r '.deploy_url' 'deploy_output.json')
                 npx playwright test --reporter=list,html
                 '''
             }
