@@ -52,15 +52,14 @@ pipeline {
                 stage('E2ETest') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            image 'my_playwright'
                             reuseNode true
                         }
                     }
                     steps {
                         sh '''
                         echo "E2E Test Stage"
-                        npm install serve
-                        node_modules/.bin/serve -s build &
+                        serve -s build &
                         sleep 10
                         rm -rf playwright-report
                         npx playwright test --reporter=list,html
@@ -89,17 +88,15 @@ pipeline {
 
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my_playwright'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
                 echo 'Starting the Deployment stage to deploy to staging'
-                npm install netlify-cli
-                npm install node-jq
-                ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --dir=./build --json > deploy_output.json
+                netlify status
+                netlify deploy --dir=./build --json > deploy_output.json
                 echo "E2E Staging Test Stage"
                 CI_ENVIRONMENT_URL=$(./node_modules/.bin/node-jq -r '.deploy_url' 'deploy_output.json')
                 npx playwright test --reporter=list,html
@@ -125,16 +122,15 @@ pipeline {
 
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my_playwright'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
                 echo 'Starting the Deployment stage'
-                npm install netlify-cli
-                ./node_modules/.bin/netlify status
-                ./node_modules/.bin/netlify deploy --prod --dir=./build
+                netlify status
+                netlify deploy --prod --dir=./build
                 echo "E2E Prod Test Stage"
                 npx playwright test --reporter=list,html
                 '''
