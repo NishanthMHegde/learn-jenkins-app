@@ -7,7 +7,29 @@ pipeline {
     }
 
     stages {
-        stage('AWS') {
+        
+        
+        stage('Build') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                ls -la
+                npm --version
+                node --version
+                npm cache clean --force
+                npm ci
+                npm run build
+                ls -la
+                '''
+            }
+        }
+
+        stage('DeployToAWS') {
             agent {
                 docker {
                     image 'amazon/aws-cli'
@@ -15,70 +37,18 @@ pipeline {
                     args "--entrypoint=''"
                 }
             }
+            environment {
+                AWS_CLI_BUCKET = 'learn-jenkins-app'
+            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jenkins-aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                     aws --version
-                    echo "Hello AWS" > index.html
-                    aws s3 cp index.html s3://learn-jenkins-app/index.html
+                    aws s3 sync build s3://$AWS_CLI_BUCKET/
                     '''
                 }
             }
         }
-        
-        // stage('Build') {
-        //     agent {
-        //         docker {
-        //             image 'node:18-alpine'
-        //             reuseNode true
-        //         }
-        //     }
-        //     steps {
-        //         sh '''
-        //         ls -la
-        //         npm --version
-        //         node --version
-        //         npm cache clean --force
-        //         npm ci
-        //         npm run build
-        //         ls -la
-        //         '''
-        //     }
-        // }
-
-        // stage('DeployToProdAndTest') {
-        //     environment {
-        //         CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
-        //     }
-
-        //     agent {
-        //         docker {
-        //             image 'my_playwright'
-        //             reuseNode true
-        //         }
-        //     }
-        //     steps {
-        //         sh '''
-        //         echo 'Starting the Deployment stage'
-        //         netlify status
-        //         netlify deploy --prod --dir=./build
-        //         echo "E2E Prod Test Stage"
-        //         npx playwright test --reporter=list,html
-        //         '''
-        //     }
-        //     post {
-        //         always {
-        //             publishHTML([
-        //                 allowMissing: false,
-        //                 alwaysLinkToLastBuild: true,
-        //                 keepAll: true,
-        //                 reportDir: 'playwright-report',
-        //                 reportFiles: 'index.html',
-        //                 reportName: 'Playwright Prodt test HTML Report'
-        //             ])
-        //         }
-        //     }
-        // }
         
     }
    
