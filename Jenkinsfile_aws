@@ -10,18 +10,19 @@ pipeline {
         stage('AWS') {
             agent {
                 docker {
-                    image: 'amazon/aws-cli'
+                    image 'amazon/aws-cli'
                     reuseNode true
                     args "--entrypoint=''"
                 }
             }
-            steps {
+            
+        }
+        steps {
                 withCredentials([usernamePassword(credentialsId: 'jenkins-aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                     aws --version
                     '''
                 }
-            }
         }
         // stage('Build') {
         //     agent {
@@ -43,39 +44,39 @@ pipeline {
         //     }
         // }
 
-        stage('DeployToProdAndTest') {
-            environment {
-                CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
-            }
+        // stage('DeployToProdAndTest') {
+        //     environment {
+        //         CI_ENVIRONMENT_URL = 'https://melodic-manatee-f502a0.netlify.app'
+        //     }
 
-            agent {
-                docker {
-                    image 'my_playwright'
-                    reuseNode true
-                }
-            }
-            steps {
-                sh '''
-                echo 'Starting the Deployment stage'
-                netlify status
-                netlify deploy --prod --dir=./build
-                echo "E2E Prod Test Stage"
-                npx playwright test --reporter=list,html
-                '''
-            }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'playwright-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Playwright Prodt test HTML Report'
-                    ])
-                }
-            }
-        }
+        //     agent {
+        //         docker {
+        //             image 'my_playwright'
+        //             reuseNode true
+        //         }
+        //     }
+        //     steps {
+        //         sh '''
+        //         echo 'Starting the Deployment stage'
+        //         netlify status
+        //         netlify deploy --prod --dir=./build
+        //         echo "E2E Prod Test Stage"
+        //         npx playwright test --reporter=list,html
+        //         '''
+        //     }
+        //     post {
+        //         always {
+        //             publishHTML([
+        //                 allowMissing: false,
+        //                 alwaysLinkToLastBuild: true,
+        //                 keepAll: true,
+        //                 reportDir: 'playwright-report',
+        //                 reportFiles: 'index.html',
+        //                 reportName: 'Playwright Prodt test HTML Report'
+        //             ])
+        //         }
+        //     }
+        // }
         
     }
    
