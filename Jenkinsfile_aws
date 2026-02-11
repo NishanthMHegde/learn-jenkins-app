@@ -15,15 +15,15 @@ pipeline {
                     args "--entrypoint=''"
                 }
             }
-            
-        }
-        steps {
+            steps {
                 withCredentials([usernamePassword(credentialsId: 'jenkins-aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                     aws --version
                     '''
                 }
+            }
         }
+        
         // stage('Build') {
         //     agent {
         //         docker {
