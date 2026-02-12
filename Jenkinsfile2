@@ -53,7 +53,7 @@ pipeline {
                         echo "Playwright test"
                         serve -s build &
                         sleep 10
-                    npx playwright test --reported=html
+                    npx playwright test --reporter=html
                     '''
                     }
                     post {
