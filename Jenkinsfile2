@@ -67,7 +67,7 @@ pipeline {
                 }
             }
         }
-        stage('AWS'){
+        stage('AWS') {
             stage('AWSStagingDepoloyment') {
                 agent {
                     docker {
