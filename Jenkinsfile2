@@ -67,57 +67,55 @@ pipeline {
                 }
             }
         }
-        stage('AWS') {
-            stage('AWSStagingDepoloyment') {
-                agent {
-                    docker {
-                        image 'amazon/aws-cli'
-                        reuseNode true
-                        args "--entrypoint='"
-                    }
-                }
-                environment {
-                    JENKINS_BUCKET_URI = "jenkins-aws2"
-                    JENKINS_REGION = "eu-north-1"
-                    CI_ENVIRONMENT_URL = "https://${JENKINS_BUCKET_URI}.s3.${JENKINS_REGION}.amazonaws.com/index.html"
-                }
-                steps {
-                    withCredentials([usernamePassword(credentialsId: 'jenkins-aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                        sh '''
-                        aws --version
-                        aws s3 sync build s3://$JENKINS_BUCKET_URI/
-                        sleep 30
-                        
-                        '''
-                    }
-                    
+        stage('AWSStagingDepoloyment') {
+            agent {
+                docker {
+                    image 'amazon/aws-cli'
+                    reuseNode true
+                    args "--entrypoint='"
                 }
             }
-            stage('TestonAWSStaging') {
-                agent {
-                    docker {
-                        image 'my_playwright2'
-                        reuseNode true
-                    }
-                }
-                environment {
-                    JENKINS_BUCKET_URI = "jenkins-aws2"
-                    JENKINS_REGION = "eu-north-1"
-                    CI_ENVIRONMENT_URL = "https://${JENKINS_BUCKET_URI}.s3.${JENKINS_REGION}.amazonaws.com/index.html"
-                }
-                steps {
+            environment {
+                JENKINS_BUCKET_URI = "jenkins-aws2"
+                JENKINS_REGION = "eu-north-1"
+                CI_ENVIRONMENT_URL = "https://${JENKINS_BUCKET_URI}.s3.${JENKINS_REGION}.amazonaws.com/index.html"
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-aws', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
-                    echo "Starting Playwright tests"
-                    npx playwright test --reporter=html
+                    aws --version
+                    aws s3 sync build s3://$JENKINS_BUCKET_URI/
+                    sleep 30
+                    
                     '''
                 }
-                post {
-                    always {
-                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright AWS Staging Report', reportTitles: '', useWrapperFileDirectly: true])
-                    }
-                }
-
+                
             }
+        }
+        stage('TestonAWSStaging') {
+            agent {
+                docker {
+                    image 'my_playwright2'
+                    reuseNode true
+                }
+            }
+            environment {
+                JENKINS_BUCKET_URI = "jenkins-aws2"
+                JENKINS_REGION = "eu-north-1"
+                CI_ENVIRONMENT_URL = "https://${JENKINS_BUCKET_URI}.s3.${JENKINS_REGION}.amazonaws.com/index.html"
+            }
+            steps {
+                sh '''
+                echo "Starting Playwright tests"
+                npx playwright test --reporter=html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, icon: '', keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright AWS Staging Report', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
+
         }
         
         
