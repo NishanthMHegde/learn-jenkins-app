@@ -17,5 +17,51 @@ pipeline {
                 '''
             }
         }
+        parallel {
+            stage('RunE2ETestsLocally') {
+                agent {
+                    docker {
+                        image 'my_playwright2'
+                        reuseNode true
+                    }
+                }
+                steps {
+                    sh '''
+                    echo "Carrying out local npm tests"
+                test -f build/index.html
+                npm test
+                '''
+                }
+                post {
+                    always {
+                        junit 'test-results/junit.xml'
+                    }
+                }
+                
+            }
+            stage('RunPlaywrightLocally') {
+                agent {
+                    docker {
+                        image 'my_playwright2'
+                        reuseNode true
+                    }
+                }
+                steps {
+                    sh '''
+                    echo "Playwright test"
+                    serve -s build &
+                    sleep 10
+                npx playwright test --reported=html
+                '''
+                }
+                post {
+                    always {
+                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, icon: '', keepAll: false, reportDir: 'playwright-reports', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                    }
+                }
+                
+            }
+        }
+        
     }
 }
